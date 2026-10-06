@@ -254,8 +254,41 @@ def build(config, keyfile, output):
         # Copy only the public tree after every verification succeeds.
         shutil.copytree(site,output)
 
+def verify_signing_config(config, keyfile):
+    """Exercise real APT signatures privately without publishing a repository."""
+    config_check(config)
+    if not config.get("primary_fingerprint") or not keyfile.is_file() or keyfile.is_symlink():
+        raise ValueError("Production public key must be configured first")
+    secret=os.environ.get("APT_SIGNING_KEY","")
+    passphrase=os.environ.get("APT_SIGNING_PASSPHRASE","")
+    if not secret or not passphrase:
+        raise ValueError("Signing key and passphrase secrets must both be configured")
+    with tempfile.TemporaryDirectory(prefix="apt-signing-check-") as temporary, contextlib.ExitStack() as cleanup:
+        directory=Path(temporary)
+        for home in ("public-check","gnupg"):
+            cleanup.callback(subprocess.run,["gpgconf","--homedir",str(directory/home),"--kill","gpg-agent"],capture_output=True)
+        validate_public_keys(directory,keyfile,config)
+        env=key_environment(directory,config,secret,keyfile)
+        site=directory/"private-probe";site.mkdir();(site/"pool").mkdir()
+        repository_metadata(site,env,config["apt_signing_fingerprint"],passphrase)
+        keyring=directory/"public.gpg"
+        keyring.write_bytes(run(["gpg","--batch","--dearmor"],input=keyfile.read_bytes()))
+        release=site/"dists/stable/Release"
+        verify_signature(keyring,release.with_name("Release.gpg"),release,
+                         config["primary_fingerprint"],config["apt_signing_fingerprint"])
+        clear=run(["gpgv","--keyring",keyring,"--output","-",release.with_name("InRelease")])
+        if clear!=release.read_bytes():
+            raise ValueError("Signing probe contents differ")
+    print("APT signing configuration verified; no package or repository was published.")
+
 if __name__=="__main__":
     parser=argparse.ArgumentParser()
-    parser.add_argument("--output",type=Path,required=True)
+    mode=parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--output",type=Path)
+    mode.add_argument("--check-signing",action="store_true")
     args=parser.parse_args()
-    build(json.loads((ROOT/"repository.json").read_text()),ROOT/"keys/mognitio.asc",args.output.resolve())
+    config=json.loads((ROOT/"repository.json").read_text())
+    if args.check_signing:
+        verify_signing_config(config,ROOT/"keys/mognitio.asc")
+    else:
+        build(config,ROOT/"keys/mognitio.asc",args.output.resolve())
