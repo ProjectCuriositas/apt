@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "base_url": "https://projectcuriositas.github.io/apt/",
+  "primary_fingerprint": null,
+  "apt_signing_fingerprint": null,
+  "bundle_signing_fingerprint": null,
+  "releases": []
+}
