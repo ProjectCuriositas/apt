@@ -4,5 +4,14 @@
   "primary_fingerprint": "C44A5AA9313FFA686779C262333C4A7C92BCBDA3",
   "apt_signing_fingerprint": "686C282ED80F64536B215571FC0DDC08D041EC45",
   "bundle_signing_fingerprint": "4245611FC8A78B4B900CDF4F6CA5FC1ED455DC71",
-  "releases": []
+  "releases": [
+    {
+      "version": "0.15.0",
+      "tag": "v0.15.0",
+      "commit": "b4a77a0d09586d2e88017da4c7d43d631e9d8cfd",
+      "manifest_sha256": "40ba3ca3dda05a2e1cc8f10fdc31832390eb2386d3dca8adb0506f5ec9e99a18",
+      "deb_sha256": "07b309eb241fd55cda0f35ef13cf6754de5598c53e7e53a1dd7945952c406706",
+      "deb_size": 9944560
+    }
+  ]
 }
