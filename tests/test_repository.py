@@ -179,3 +179,14 @@ class RepositoryTests(unittest.TestCase):
                 key=Path(temp)/"missing" if problem=="missing" else self.key
                 with self.assertRaises((ValueError,KeyError)):build.build(config,key,out)
                 self.assertFalse(out.exists())
+
+    def test_private_signing_probe_succeeds_without_release_inputs(self):
+        config=copy.deepcopy(self.config);config["releases"]=[]
+        with patch.object(build,"fetch",side_effect=AssertionError("No release download expected")),patch.dict(os.environ,APT_SIGNING_KEY=self.secret,APT_SIGNING_PASSPHRASE=PASSWORD):
+            build.verify_signing_config(config,self.key)
+
+    def test_private_signing_probe_rejects_missing_or_wrong_passphrase(self):
+        for password in ("","incorrect-probe-passphrase"):
+            with patch.dict(os.environ,APT_SIGNING_KEY=self.secret,APT_SIGNING_PASSPHRASE=password):
+                with self.assertRaises((ValueError,subprocess.CalledProcessError)):
+                    build.verify_signing_config(self.config,self.key)

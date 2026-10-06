@@ -34,6 +34,11 @@ python3 scripts/register-apt-key.py /path/to/online
 This validates that the APT file contains a stub primary and exactly the selected
 APT subkey, then stores APT_SIGNING_KEY and APT_SIGNING_PASSPHRASE in the
 release-signing GitHub environment. The passphrase is read locally without echo.
+After registration, dispatch the Verify production signing configuration workflow
+on main. It signs and verifies private temporary APT metadata with the configured
+subkey, then removes the temporary files. It publishes no repository or artifact.
+Confirm this succeeds before the first package publication.
+
 Only the APT subkey is registered here. Bundle signing setup belongs to the
 Mognitio release pipeline.
 
