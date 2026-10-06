@@ -61,7 +61,7 @@ class RepositoryTests(unittest.TestCase):
 
     def test_bootstrap_has_no_install_commands_or_unsigned_metadata(self):
         config=json.loads((ROOT/"repository.json").read_text())
-        config["releases"]=[]
+        config.update(releases=[],primary_fingerprint=None,apt_signing_fingerprint=None,bundle_signing_fingerprint=None)
         with tempfile.TemporaryDirectory() as temp:
             out=Path(temp)/"site";build.build(config,Path(temp)/"absent",out)
             self.assertNotIn("apt install", (out/"index.html").read_text())
@@ -155,3 +155,27 @@ class RepositoryTests(unittest.TestCase):
             build.run(["apt-get",*options,"update"])
             build.run(["apt-get",*options,"download","mognitio"],cwd=root/"downloads")
             self.assertEqual((root/"downloads"/self.deb.name).read_bytes(),self.deb.read_bytes())
+
+    def test_key_only_site_publishes_verified_public_key_without_packages(self):
+        config=copy.deepcopy(self.config);config["releases"]=[]
+        with tempfile.TemporaryDirectory() as temp:
+            out=Path(temp)/"site"
+            build.build(config,self.key,out)
+            self.assertEqual((out/"keys/mognitio.asc").read_bytes(),self.key.read_bytes())
+            text=(out/"index.html").read_text()
+            for fingerprint in (self.primary,self.apt,self.bundle):self.assertIn(fingerprint,text)
+            self.assertIn("independent verification channel is not yet available",text)
+            self.assertNotIn("apt install",text)
+            self.assertFalse((out/"dists").exists())
+            self.assertFalse((out/"pool").exists())
+
+    def test_key_only_site_rejects_missing_partial_or_mismatched_key(self):
+        for problem in ("missing","partial","mismatch"):
+            config=copy.deepcopy(self.config);config["releases"]=[]
+            if problem=="partial":config["apt_signing_fingerprint"]=None
+            if problem=="mismatch":config["primary_fingerprint"]="A"*40
+            with tempfile.TemporaryDirectory() as temp:
+                out=Path(temp)/"site"
+                key=Path(temp)/"missing" if problem=="missing" else self.key
+                with self.assertRaises((ValueError,KeyError)):build.build(config,key,out)
+                self.assertFalse(out.exists())

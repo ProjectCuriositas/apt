@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "base_url": "https://projectcuriositas.github.io/apt/",
-  "primary_fingerprint": null,
-  "apt_signing_fingerprint": null,
-  "bundle_signing_fingerprint": null,
+  "primary_fingerprint": "C44A5AA9313FFA686779C262333C4A7C92BCBDA3",
+  "apt_signing_fingerprint": "686C282ED80F64536B215571FC0DDC08D041EC45",
+  "bundle_signing_fingerprint": "4245611FC8A78B4B900CDF4F6CA5FC1ED455DC71",
   "releases": []
 }

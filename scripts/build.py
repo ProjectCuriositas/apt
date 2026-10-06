@@ -55,7 +55,8 @@ def config_check(config):
                 raise ValueError("Missing exact release pin: " + name)
         if not isinstance(release["deb_size"], int) or not 0 < release["deb_size"] <= 100*1024*1024:
             raise ValueError("Invalid package size")
-    if releases:
+    if releases or any(config.get(field) is not None for field in
+                       ("primary_fingerprint","apt_signing_fingerprint","bundle_signing_fingerprint")):
         for field in ("primary_fingerprint","apt_signing_fingerprint","bundle_signing_fingerprint"):
             if not re.fullmatch("[0-9A-F]{40}", config.get(field) or ""):
                 raise ValueError("Production key fingerprints are not configured")
@@ -189,6 +190,13 @@ def repository_metadata(site, env, signing, passphrase):
 def landing(site, config):
     if not config["releases"]:
         body = "<h1>ProjectCuriositas APT</h1><p>Repository setup is in progress. No packages are published yet.</p>"
+        if config.get("primary_fingerprint"):
+            body += '<p><a href="keys/mognitio.asc">Production public key</a></p>'
+            for label,field in (("Primary","primary_fingerprint"),("APT signing subkey","apt_signing_fingerprint"),
+                                ("Bundle signing subkey","bundle_signing_fingerprint")):
+                body += "<p>"+label+" fingerprint: <code>"+config[field]+"</code></p>"
+            body += "<p>Compare these fingerprints with the reviewed GitHub repository. GitHub and this Pages site "
+            body += "share the same account authority; an independent verification channel is not yet available.</p>"
     else:
         primary=config["primary_fingerprint"]
         body = "<h1>Mognitio APT repository</h1><p>Ubuntu 24.04 / 26.04 amd64; stable/main.</p>"
@@ -216,12 +224,13 @@ def build(config, keyfile, output):
         raise ValueError("Use a new output directory")
     with tempfile.TemporaryDirectory(prefix="apt-build-") as temporary, contextlib.ExitStack() as cleanup:
         directory=Path(temporary);site=directory/"site";site.mkdir()
-        if config["releases"]:
+        if config.get("primary_fingerprint"):
             if not keyfile.is_file() or keyfile.is_symlink():
                 raise ValueError("Missing production public key")
             cleanup.callback(subprocess.run,["gpgconf","--homedir",str(directory/"public-check"),"--kill","gpg-agent"],capture_output=True)
             validate_public_keys(directory,keyfile,config)
             keys=site/"keys";keys.mkdir();shutil.copyfile(keyfile,keys/"mognitio.asc")
+        if config["releases"]:
             keyring=directory/"public.gpg"
             keyring.write_bytes(run(["gpg","--batch","--dearmor"],input=keyfile.read_bytes()))
             pool=site/"pool/main/m/mognitio";pool.mkdir(parents=True)
