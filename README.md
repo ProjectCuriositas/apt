@@ -2,9 +2,9 @@
 
 Signed Linux distribution hosted at [GitHub Pages](https://projectcuriositas.github.io/apt/).
 
-Repository registration is being prepared. No package is published until the
-production public key and an approved release are configured in repository.json.
-The site only displays install commands after signed metadata has been verified.
+Mognitio 0.15.0 is pinned in repository.json by its formal release commit, signed
+manifest and Debian package digest. Follow the Pages installation instructions
+after successful deployment; the site verifies signed metadata before publication.
 
 Supported initial target: Mognitio on Ubuntu 24.04 and 26.04 amd64, stable/main.
 
