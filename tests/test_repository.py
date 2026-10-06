@@ -148,7 +148,10 @@ class RepositoryTests(unittest.TestCase):
             (root/"lists/partial").mkdir(parents=True);(root/"downloads").mkdir()
             sources=root/"sources.list"
             sources.write_text("deb [signed-by="+str(site/"keys/mognitio.asc")+"] file:"+str(site)+" stable main\n")
-            options=["-o","Dir::Etc::main=-","-o","Dir::Etc::parts=-",
+            # Keep installed host versions out of this disposable repository test.
+            (root/"status").write_text("")
+            options=["-o","Dir::State::status="+str(root/"status"),
+                "-o","Dir::Etc::main=-","-o","Dir::Etc::parts=-",
                 "-o","Dir::Etc::sourcelist="+str(sources),"-o","Dir::Etc::sourceparts=-",
                 "-o","Dir::State::lists="+str(root/"lists"),"-o","APT::Update::Error-Mode=any",
                 "-o","APT::Sandbox::User="+pwd.getpwuid(os.getuid()).pw_name]
