@@ -2,7 +2,7 @@
 
 Signed Linux distribution hosted at [GitHub Pages](https://projectcuriositas.github.io/apt/).
 
-Mognitio 1.0.0 is pinned in repository.json by its formal release commit, signed
+Mognitio 1.1.0 is pinned in repository.json by its formal release commit, signed
 manifest and Debian package digest. Follow the Pages installation instructions
 after successful deployment; the site verifies signed metadata before publication.
 
