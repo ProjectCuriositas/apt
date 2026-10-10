@@ -36,6 +36,14 @@
       "manifest_sha256": "c91796b1bee9e63999524d687f0ff9ceb12e50ae5c4d28de1185dbb5389d04d2",
       "deb_sha256": "7a79ed7ba94c5b242d3045fb00eafbcf3fd9770fb61cd2df1be23a632216219b",
       "deb_size": 9949846
+    },
+    {
+      "version": "1.2.0",
+      "tag": "v1.2.0",
+      "commit": "284a9b59abd2231a6bb15fefb3455ba3fa3fc481",
+      "manifest_sha256": "5c57f02fcc8f23aa659d53c696faa64dae28f2539efd89dcda9db1d81d474a40",
+      "deb_sha256": "e278af57e693ae72d15fe7b0e37c54a803bef7100f723676ebd3e8c916b2084d",
+      "deb_size": 10066740
     }
   ]
 }
